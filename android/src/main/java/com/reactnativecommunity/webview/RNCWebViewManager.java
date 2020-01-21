@@ -3,14 +3,20 @@ package com.reactnativecommunity.webview;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.DownloadManager;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.Manifest;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Environment;
 import androidx.annotation.RequiresApi;
@@ -36,6 +42,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.webkit.SslErrorHandler;
 
 import com.facebook.react.views.scroll.ScrollEvent;
 import com.facebook.react.views.scroll.ScrollEventType;
@@ -714,6 +721,44 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected boolean mLastLoadFailed = false;
     protected @Nullable
     ReadableArray mUrlPrefixesForDefaultIntent;
+
+    @Override
+    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+      Context context = view.getContext();
+      final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+      switch (error.getPrimaryError()) {
+        case SslError.SSL_UNTRUSTED:
+            builder.setMessage("SslError : The certificate authority is not trusted.");
+            break;
+        case SslError.SSL_EXPIRED:
+            builder.setMessage("SslError : The certificate has expired.");
+            break;
+        case SslError.SSL_IDMISMATCH:
+            builder.setMessage("The certificate Hostname mismatch.");
+            break;
+        case SslError.SSL_NOTYETVALID:
+            builder.setMessage("The certificate is not yet valid.");
+            break;
+        default:
+            builder.setMessage("Unknown error - invalide certificate.");
+      }
+
+      builder.setPositiveButton("Continuer", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+              handler.proceed();
+          }
+      });
+      builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+              handler.cancel();
+          }
+      });
+      final AlertDialog dialog = builder.create();
+      dialog.show();
+    }
 
     @Override
     public void onPageFinished(WebView webView, String url) {
