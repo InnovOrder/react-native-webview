@@ -724,40 +724,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-      Context context = view.getContext();
-      final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-
-      switch (error.getPrimaryError()) {
-        case SslError.SSL_UNTRUSTED:
-            builder.setMessage("SslError : The certificate authority is not trusted.");
-            break;
-        case SslError.SSL_EXPIRED:
-            builder.setMessage("SslError : The certificate has expired.");
-            break;
-        case SslError.SSL_IDMISMATCH:
-            builder.setMessage("The certificate Hostname mismatch.");
-            break;
-        case SslError.SSL_NOTYETVALID:
-            builder.setMessage("The certificate is not yet valid.");
-            break;
-        default:
-            builder.setMessage("Unknown error - invalide certificate.");
-      }
-
-      builder.setPositiveButton("Continuer", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-              handler.proceed();
-          }
-      });
-      builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-              handler.cancel();
-          }
-      });
-      final AlertDialog dialog = builder.create();
-      dialog.show();
+      handler.proceed();
     }
 
     @Override
